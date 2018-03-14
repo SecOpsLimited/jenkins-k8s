@@ -1,0 +1,8 @@
+FROM jenkins/jnlp-slave:alpine
+USER root
+RUN apk --no-cache add docker python py-pip && \
+    rm -rf /var/cache/apk/*
+RUN pip install awscli
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh 
+ENTRYPOINT /entrypoint.sh
