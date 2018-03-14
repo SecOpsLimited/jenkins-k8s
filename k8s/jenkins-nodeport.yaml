@@ -1,0 +1,17 @@
+## we used this to connect the windoze slave
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: jenkins
+  name: jenkins
+  namespace: jenkins
+spec:
+  ports:
+  - name: jnlp-nodeport
+    nodePort: 31500
+    protocol: TCP
+    port: 50000
+  selector:
+    run: jenkins
+  type: NodePort

@@ -1,0 +1,66 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: jenkins
+  name: jenkins
+  namespace: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: jenkins
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: jenkins
+    spec:
+      containers:
+      - env:
+        - name: LDAP_BIND_PW
+          value: somesupersecurepasswordyoushoulddefinitelygetfromasecret
+        image: <redacted>.dkr.ecr.eu-west-1.amazonaws.com/platform/jenkins
+        imagePullPolicy: Always
+        name: jenkins
+        resources:
+          limits:
+            memory: 4G
+          requests:
+            memory: 2G
+        securityContext:
+          privileged: true #ymmv but we had issues with filesystem permissions
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/jenkins_home
+          name: jenkins-persistent-storage
+        - mountPath: /var/jenkins_home/.ssh
+          name: gitlab-ssh
+      dnsPolicy: ClusterFirst
+      hostAliases:
+      - hostnames:
+        - some.ldap.server.without.public.dns
+        ip: 8.7.6.5
+      imagePullSecrets:
+      - name: awsecr-cred
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1000
+      serviceAccount: jenkins-master
+      serviceAccountName: jenkins-master
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: jenkins-persistent-storage
+        persistentVolumeClaim:
+          claimName: jenkins-pv-claim
+      - name: gitlab-ssh
+        secret:
+          defaultMode: 420
+          secretName: gitlab-ssh

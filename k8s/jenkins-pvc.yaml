@@ -1,0 +1,17 @@
+## we used rook, might need to put your own storageclass here
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    volume.beta.kubernetes.io/storage-provisioner: rook.io/block
+  labels:
+    app: jenkins
+  name: jenkins-pv-claim
+  namespace: jenkins
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: rook-block
